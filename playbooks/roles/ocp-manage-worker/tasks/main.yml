@@ -1,5 +1,8 @@
-
 ---
+- name: Check if cluster operators and nodes are healthy
+  include_role:
+    name: check-cluster-health
+
 - name: Scale MachineSet to desired replicas
   command: oc scale --replicas={{ desired_replicas }} machinesets.machine.openshift.io {{ machineset_name }} -n {{ namespace }}
 
