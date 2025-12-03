@@ -12,8 +12,27 @@
 - name: Wait for all nodes to be Ready
   shell: oc wait --all --for=condition=Ready nodes --timeout=600s
 
+
+  # Display MachineSet status
 - name: Display final MachineSet status
   command: oc get machinesets.machine.openshift.io -n {{ namespace }}
+  register: machineset_status
 
-- name: Display final node status
+- debug:
+    var: machineset_status.stdout_lines
+
+#  Display Machine status
+- name: Display final Machine status
+  command: oc get machines.machine.openshift.io -n {{ namespace }}
+  register: machine_status
+
+- debug:
+    var: machine_status.stdout_lines
+
+# Display Node status
+- name: Display final Node status
   command: oc get nodes
+  register: node_status
+
+- debug:
+    var: node_status.stdout_lines
