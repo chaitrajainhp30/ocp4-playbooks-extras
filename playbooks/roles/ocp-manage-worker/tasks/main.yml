@@ -1,0 +1,22 @@
+---
+- name: Scale OpenShift Worker Nodes
+  hosts: bastion
+  vars:
+    machineset_name: ipi421wdc6-9wnqb-worker
+    namespace: openshift-machine-api
+    desired_replicas: 5
+  tasks:
+    - name: Scale MachineSet to desired replicas
+      command: oc scale --replicas={{ desired_replicas }} machinesets.machine.openshift.io {{ machineset_name }} -n {{ namespace }}
+
+    - name: Wait for MachineSet to reach desired replicas
+      shell: oc wait --for=jsonpath='{.status.replicas}'={{ desired_replicas }} machineset {{ machineset_name }} -n {{ namespace }} --timeout=300s
+
+    - name: Wait for all nodes to be Ready
+      shell: oc wait --all --for=condition=Ready nodes --timeout=600s
+
+    - name: Display final MachineSet status
+      command: oc get machinesets.machine.openshift.io -n {{ namespace }}
+
+    - name: Display final node status
+      command: oc get nodes
