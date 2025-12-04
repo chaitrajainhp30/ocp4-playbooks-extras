@@ -9,6 +9,23 @@
 - name: Wait for MachineSet to reach desired replicas
   shell: oc wait --for=jsonpath='{.status.replicas}'={{ desired_replicas }} machineset {{ machineset_name }} -n {{ namespace }} --timeout=300s
 
+- name: Wait for all Machines in the MachineSet to be Running
+  shell: |
+    oc get machines.machine.openshift.io -n {{ namespace }} \
+      -l machine.openshift.io/cluster-api-machineset={{ machineset_name }} \
+      -o jsonpath='{range .items[*]}{.status.phase}{"\n"}{end}' | grep -c '^Running$' || true
+  register: running_count
+  until: running_count.stdout|int == desired_replicas|int
+  retries: 40    # ~13 minutes at delay 20s 
+  delay: 20
+  changed_when: false
+  ignore_errors: yes
+
+- name: Fail if Machines did not reach Running phase
+  fail:
+    msg: "Machines in {{ machineset_name }} did not all reach 'Running'. Running={{ running_count.stdout }} expected={{ desired_replicas }}"
+  when: running_count.stdout|int != desired_replicas|int
+
 - name: Wait for all nodes to be Ready
   shell: oc wait --all --for=condition=Ready nodes --timeout=600s
 
