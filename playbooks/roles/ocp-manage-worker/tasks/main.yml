@@ -16,8 +16,8 @@
       -o jsonpath='{range .items[*]}{.status.phase}{"\n"}{end}' | grep -c '^Running$' || true
   register: running_count
   until: running_count.stdout|int == desired_replicas|int
-  retries: 40    # ~13 minutes at delay 20s 
-  delay: 20
+  retries: 20    # ~16 minutes at delay 20s 
+  delay: 48
   changed_when: false
   ignore_errors: yes
 
