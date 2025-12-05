@@ -16,10 +16,15 @@
       -o jsonpath='{range .items[*]}{.status.phase}{"\n"}{end}' | grep -c '^Running$' || true
   register: running_count
   until: running_count.stdout|int == desired_replicas|int
-  retries: 20    # ~16 minutes at delay 20s 
-  delay: 48
+  retries: 20     
+  delay: 60
   changed_when: false
   ignore_errors: yes
+
+- name: Print progress after each retry
+  debug:
+    msg: "Current Running Machines: {{ running_count.stdout }} / {{ desired_replicas }}"
+  when: running_count.stdout|int != desired_replicas|int
 
 - name: Fail if Machines did not reach Running phase
   fail:
