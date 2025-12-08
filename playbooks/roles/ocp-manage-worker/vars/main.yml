@@ -1,3 +1,2 @@
-machineset_name: worker_name
 namespace: openshift-machine-api
 desired_replicas: 5
