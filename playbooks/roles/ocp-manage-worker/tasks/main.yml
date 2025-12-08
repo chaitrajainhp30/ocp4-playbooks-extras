@@ -1,4 +1,13 @@
 ---
+- name: Get the  MachineSet name
+  shell: >
+    oc get machinesets -n {{ namespace }} -o=jsonpath='{.items[0].metadata.name}'
+  register: ms_name
+
+- name: Set machineset_name
+  set_fact:
+    machineset_name: "{{ ms_name.stdout | trim }}"
+
 - name: Check if cluster operators and nodes are healthy
   include_role:
     name: check-cluster-health
